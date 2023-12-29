@@ -2,7 +2,7 @@ package utils
 
 import "errors"
 
-func xorBytes(a, b []byte) ([]byte, error) {
+func XorBytes(a, b []byte) ([]byte, error) {
 	if len(a) != len(b) {
 		return nil, errors.New("Length of Byte slices not equal!")
 	}

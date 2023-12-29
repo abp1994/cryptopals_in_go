@@ -3,8 +3,9 @@ package main
 import (
 	"encoding/base64"
 	"encoding/hex"
-	"errors"
 	"fmt"
+
+	"github.com/abp1994/cryptopals_in_go/pkg/utils"
 )
 
 func main() {
@@ -27,22 +28,6 @@ func c1() {
 	fmt.Println("Base 64 plaintext:", plaintextB64)
 }
 
-func xorBytes(a, b []byte) ([]byte, error) {
-	if len(a) != len(b) {
-		return nil, errors.New("Length of Byte slices not equal!")
-	}
-
-	// Create a new byte slice to store the result
-	result := make([]byte, len(a))
-
-	// Iterate through each pair of bytes and apply XOR
-	for i := 0; i < len(a); i++ {
-		result[i] = a[i] ^ b[i]
-	}
-
-	return result, nil
-}
-
 func c2() {
 
 	fmt.Println("\n-- Challenge 2 - Fixed XOR --")
@@ -54,12 +39,15 @@ func c2() {
 	handleError(err)
 	key, err := hex.DecodeString(keyHex)
 
-	plaintext, err := xorBytes(ciphertext, key)
+	plaintext, err := utils.XorBytes(ciphertext, key)
 	handleError(err)
 
-	fmt.Println("Ciphertext:", string(ciphertext))
+	plaintextHex := hex.EncodeToString(plaintext)
+
+	fmt.Println("Hex ciphertext:", ciphertextHex)
 	fmt.Println("Key:", string(key))
 	fmt.Println("Plaintext:", string(plaintext))
+	fmt.Println("Hex encoded plaintext:", plaintextHex)
 
 }
 
