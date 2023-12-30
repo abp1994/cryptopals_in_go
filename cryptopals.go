@@ -51,6 +51,17 @@ func c2() {
 
 }
 
+func c3() {
+
+	fmt.Println("\n-- Challenge 3 - Single-byte XOR cipher --")
+
+	ciphertextHex := "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736"
+	ciphertext, err := hex.DecodeString(ciphertextHex)
+	handleError(err)
+
+	fmt.Println(ciphertext)
+}
+
 func handleError(err error) {
 	if err != nil {
 		fmt.Printf("Error: %s\n", err.Error())
