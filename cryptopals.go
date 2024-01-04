@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
+	"math"
 
 	"github.com/abp1994/cryptopals_in_go/pkg/utils"
 )
@@ -11,6 +12,7 @@ import (
 func main() {
 	c1()
 	c2()
+	c3()
 }
 
 func c1() {
@@ -59,7 +61,25 @@ func c3() {
 	ciphertext, err := hex.DecodeString(ciphertextHex)
 	handleError(err)
 
-	fmt.Println(ciphertext)
+	plaintext := make([]byte, len(ciphertext))
+	var lowestScore float32 = math.MaxFloat32
+	var lowestScoreKey byte = 'A'
+	lowestScoringPlaintext := ciphertext
+	for i := 0; i <= 255; i++ {
+		plaintext = utils.SingleByteXOR(byte(i), ciphertext)
+		newScore := utils.EnglishTextScorer(plaintext)
+		if newScore < lowestScore {
+			lowestScore = newScore
+			lowestScoreKey = byte(i)
+			lowestScoringPlaintext = plaintext
+		}
+	}
+
+	fmt.Println("Ciphertext: ", string(ciphertext))
+	fmt.Printf("Lowest Chi-Square score: %f\n", lowestScore)
+	fmt.Println("Corresponding Key: ", string(lowestScoreKey))
+	fmt.Println("Lowest scoring plaintext: ", string(lowestScoringPlaintext))
+
 }
 
 func handleError(err error) {
