@@ -14,6 +14,7 @@ func main() {
 	c2()
 	c3()
 	c4()
+	c5()
 }
 
 func c1() {
@@ -65,7 +66,6 @@ func c3() {
 	fmt.Printf("Lowest Chi-Square score : %f\n", score)
 	fmt.Println("Corresponding Key       :", string(key))
 	fmt.Println("Corresponding plaintext :", string(plaintext))
-
 }
 
 func c4() {
@@ -77,20 +77,21 @@ func c4() {
 	lowestScoringPlaintext := make([]byte, hex.DecodedLen(len(dataHex[0])))
 	var lowestScoringLine int = 0
 
+	// Crack lines of text.
 	for i, ciphertextHex := range dataHex {
-		// Create a byte slice to store the decoded data
+		// Create a byte slice to store the decoded data.
 		ciphertext := make([]byte, hex.DecodedLen(len(ciphertextHex)))
 
-		// Decode the hex-encoded data into the decoded byte slice
+		// Decode the hex-encoded data into the decoded byte slice.
 		n, err := hex.Decode(ciphertext, ciphertextHex)
 		if err != nil {
 			fmt.Println("Error decoding base64:", err)
 		}
 
-		// Trim any extra capacity in the decoded byte slice
+		// Trim any extra capacity in the decoded byte slice.
 		ciphertext = ciphertext[:n]
 
-		//Crack single byte XOR and record key and score
+		//Crack single byte XOR and record key and score.
 		plaintext, key, score := utils.CrackSingleByteXor(ciphertext)
 		if score < lowestScore {
 			lowestScore = score
@@ -103,6 +104,16 @@ func c4() {
 	fmt.Println("Corresponding line      :", lowestScoringLine)
 	fmt.Println("Corresponding Key       :", string(lowestScoreKey))
 	fmt.Println("Corresponding plaintext :", string(lowestScoringPlaintext))
+}
+
+func c5() {
+	plaintext := []byte("Burning 'em, if you ain't quick and nimble\nI go crazy when I hear a cymbal")
+	key := []byte("ICE")
+	ciphertext := utils.RepeatingKeyXor(key, plaintext)
+
+	fmt.Println("Plaintext:", string(plaintext))
+	fmt.Println("Key:", string(key))
+	fmt.Println("Ciphertext hex:", hex.EncodeToString(ciphertext))
 }
 
 func handleError(err error) {

@@ -48,7 +48,15 @@ func CrackSingleByteXor(ciphertext []byte) ([]byte, byte, float32) {
 		}
 	}
 	return lowestScoringPlaintext, lowestScoreKey, lowestScore
+}
 
+func RepeatingKeyXor(key []byte, byteslice []byte) []byte {
+
+	targetLength := len(byteslice)
+	repeatedKey := bytes.Repeat(key, (targetLength+len(key)-1)/len(key))
+
+	result, _ := XorBytes(repeatedKey[:targetLength], byteslice)
+	return result
 }
 
 var nonAlphabeticCharPattern = regexp.MustCompile(`[^a-zA-Z]+`)
