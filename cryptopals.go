@@ -107,6 +107,8 @@ func c4() {
 }
 
 func c5() {
+	fmt.Println("\n-- Challenge 5 - Implement repeating-key XOR --")
+
 	plaintext := []byte("Burning 'em, if you ain't quick and nimble\nI go crazy when I hear a cymbal")
 	key := []byte("ICE")
 	ciphertext := utils.RepeatingKeyXor(key, plaintext)
