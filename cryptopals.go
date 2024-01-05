@@ -1,12 +1,10 @@
 package main
 
 import (
-	"bufio"
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
 	"math"
-	"os"
 
 	"github.com/abp1994/cryptopals_in_go/pkg/utils"
 )
@@ -60,51 +58,42 @@ func c3() {
 	ciphertextHex := "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736"
 	ciphertext, err := hex.DecodeString(ciphertextHex)
 	handleError(err)
-
-	plaintext := make([]byte, len(ciphertext))
-	var lowestScore float32 = math.MaxFloat32
-	var lowestScoreKey byte = 'A'
-	lowestScoringPlaintext := ciphertext
-	for i := 0; i <= 255; i++ {
-		plaintext = utils.SingleByteXOR(byte(i), ciphertext)
-		newScore := utils.EnglishTextScorer(plaintext)
-		if newScore < lowestScore {
-			lowestScore = newScore
-			lowestScoreKey = byte(i)
-			lowestScoringPlaintext = plaintext
-		}
-	}
+	plaintext, key, score, err := utils.CrackSingleByteXor(ciphertext)
+	handleError(err)
 
 	fmt.Println("Ciphertext: ", string(ciphertext))
-	fmt.Printf("Lowest Chi-Square score: %f\n", lowestScore)
-	fmt.Println("Corresponding Key: ", string(lowestScoreKey))
-	fmt.Println("Lowest scoring plaintext: ", string(lowestScoringPlaintext))
+	fmt.Printf("Lowest Chi-Square score: %f\n", score)
+	fmt.Println("Corresponding Key: ", string(key))
+	fmt.Println("Lowest scoring plaintext: ", string(plaintext))
 
 }
 
 func c4() {
 	fmt.Println("\n-- Challenge 4 - Detect single-char XOR --")
-	// Open the file
-	file, err := os.Open("github.com/abp1994/cryptopals_in_go/res/data_S1C4.txt")
-	if err != nil {
-		fmt.Println("Error opening file:", err)
-		return
-	}
-	defer file.Close()
+	dataHex := utils.ImportTxtLines("res/data_S1C4.txt")
 
-	// Create a scanner to read the file line by line
-	scanner := bufio.NewScanner(file)
+	var lowestScore float32 = math.MaxFloat32
+	var lowestScoreKey byte = 'A'
+	lowestScoringPlaintext := []byte("AAAAAAAAAAAAAAAA")
 
-	// Read the file line by line
-	for scanner.Scan() {
-		line := scanner.Text()
-		fmt.Println(line)
-	}
+	for _, ciphertextHex := range dataHex {
+		// Create a byte slice to store the decoded data
+		ciphertext := make([]byte, hex.DecodedLen(len(ciphertextHex)))
 
-	// Check for errors during scanning
-	if err := scanner.Err(); err != nil {
-		fmt.Println("Error reading file:", err)
+		// Decode the hex-encoded data into the decoded byte slice
+		n, err := hex.Decode(ciphertext, ciphertextHex)
+		if err != nil {
+			fmt.Println("Error decoding base64:", err)
+		}
+
+		// Trim any extra capacity in the decoded byte slice
+		ciphertext = ciphertext[:n]
+
+		//
 	}
+	println(lowestScore)
+	println(lowestScoreKey)
+	println(lowestScoringPlaintext)
 }
 
 func handleError(err error) {

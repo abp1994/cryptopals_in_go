@@ -22,18 +22,32 @@ func XorBytes(a, b []byte) ([]byte, error) {
 	return result, nil
 }
 
-func SingleByteXOR(singleByte byte, byteSlice []byte) []byte {
+func SingleByteXOR(key byte, byteSlice []byte) []byte {
 
 	result := make([]byte, len(byteSlice))
 
 	for i, currentByte := range byteSlice {
-		result[i] = singleByte ^ currentByte
+		result[i] = key ^ currentByte
 	}
 	return result
 }
 
-func CrackSingleByteXor(ciphertext []byte) ([]byte, byte, error) {
-	return ciphertext, ciphertext[0], nil
+func CrackSingleByteXor(ciphertext []byte) ([]byte, byte, float32, error) {
+	plaintext := make([]byte, len(ciphertext))
+	var lowestScore float32 = math.MaxFloat32
+	var lowestScoreKey byte = 'A'
+	lowestScoringPlaintext := ciphertext
+
+	for i := 0; i <= 255; i++ {
+		plaintext = SingleByteXOR(byte(i), ciphertext)
+		newScore := EnglishTextScorer(plaintext)
+		if newScore < lowestScore {
+			lowestScore = newScore
+			lowestScoreKey = byte(i)
+			lowestScoringPlaintext = plaintext
+		}
+	}
+	return lowestScoringPlaintext, lowestScoreKey, lowestScore, nil
 
 }
 
