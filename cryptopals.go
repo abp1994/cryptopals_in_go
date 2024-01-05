@@ -15,6 +15,7 @@ func main() {
 	c3()
 	c4()
 	c5()
+	c6()
 }
 
 func c1() {
@@ -116,6 +117,12 @@ func c5() {
 	fmt.Println("Plaintext:", string(plaintext))
 	fmt.Println("Key:", string(key))
 	fmt.Println("Ciphertext hex:", hex.EncodeToString(ciphertext))
+}
+func c6() {
+	fmt.Println("\n-- Challenge 6 - Break repeating-key XOR --")
+	x, err := utils.FindHammingDistance([]byte("this is a test"), []byte("wokka wokka!!!"))
+	handleError(err)
+	fmt.Println(x)
 }
 
 func handleError(err error) {

@@ -3,6 +3,7 @@ package utils
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"math"
 	"regexp"
 )
@@ -15,7 +16,7 @@ func XorBytes(a, b []byte) ([]byte, error) {
 	result := make([]byte, len(a))
 
 	// Iterate through each pair of bytes and apply XOR.
-	for i := 0; i < len(a); i++ {
+	for i := range a {
 		result[i] = a[i] ^ b[i]
 	}
 
@@ -57,6 +58,30 @@ func RepeatingKeyXor(key []byte, byteslice []byte) []byte {
 
 	result, _ := XorBytes(repeatedKey[:targetLength], byteslice)
 	return result
+}
+
+func FindHammingDistance(bytes1, bytes2 []byte) (int, error) {
+	// Check if the input slices have equal length
+	if len(bytes1) != len(bytes2) {
+		return 0, fmt.Errorf("input slices must have equal length")
+	}
+
+	// XOR the two slices to find differing bits
+	xorResult, err := XorBytes(bytes1, bytes2)
+	if err != nil {
+		return 0, err
+	}
+
+	// Count the set bits in the XOR result
+	distance := 0
+	for _, b := range xorResult {
+		for b != 0 {
+			distance++
+			b &= b - 1
+		}
+	}
+
+	return distance, nil
 }
 
 var nonAlphabeticCharPattern = regexp.MustCompile(`[^a-zA-Z]+`)
