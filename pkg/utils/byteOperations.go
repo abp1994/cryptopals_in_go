@@ -75,7 +75,7 @@ func EnglishTextScorer(text []byte) float32 {
 	rejectionValue := float32(math.MaxFloat32)
 
 	// Prescreen
-	// Reject low letter proportion.
+	// Reject text with low letter proportion.
 
 	alphaOnlyText := make([]byte, len(text))
 	copy(alphaOnlyText, text)
@@ -86,7 +86,7 @@ func EnglishTextScorer(text []byte) float32 {
 		return rejectionValue
 	}
 
-	// Reject high undesirable character proportion.
+	// Reject text with high undesirable character proportion.
 	undesirableCharOnlyText := desirableCharPattern.ReplaceAll(text, []byte(""))
 	undesirableCharProportion := float32(len(undesirableCharOnlyText)) / textLength
 	if 0.1 < undesirableCharProportion {
@@ -110,5 +110,4 @@ func calculateChiSquared(observedFreq, expectedFreq map[byte]float32) float32 {
 		score += (observed - expected) * (observed - expected) / expected
 	}
 	return score
-
 }

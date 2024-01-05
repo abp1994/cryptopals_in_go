@@ -1,10 +1,12 @@
 package main
 
 import (
+	"bufio"
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
 	"math"
+	"os"
 
 	"github.com/abp1994/cryptopals_in_go/pkg/utils"
 )
@@ -13,10 +15,10 @@ func main() {
 	c1()
 	c2()
 	c3()
+	c4()
 }
 
 func c1() {
-
 	fmt.Println("\n-- Challenge 1 - Convert hex to base 64 --")
 
 	plaintextHex := "49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d"
@@ -31,7 +33,6 @@ func c1() {
 }
 
 func c2() {
-
 	fmt.Println("\n-- Challenge 2 - Fixed XOR --")
 
 	ciphertextHex := "1c0111001f010100061a024b53535009181c"
@@ -54,7 +55,6 @@ func c2() {
 }
 
 func c3() {
-
 	fmt.Println("\n-- Challenge 3 - Single-byte XOR cipher --")
 
 	ciphertextHex := "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736"
@@ -80,6 +80,31 @@ func c3() {
 	fmt.Println("Corresponding Key: ", string(lowestScoreKey))
 	fmt.Println("Lowest scoring plaintext: ", string(lowestScoringPlaintext))
 
+}
+
+func c4() {
+	fmt.Println("\n-- Challenge 4 - Detect single-char XOR --")
+	// Open the file
+	file, err := os.Open("github.com/abp1994/cryptopals_in_go/res/data_S1C4.txt")
+	if err != nil {
+		fmt.Println("Error opening file:", err)
+		return
+	}
+	defer file.Close()
+
+	// Create a scanner to read the file line by line
+	scanner := bufio.NewScanner(file)
+
+	// Read the file line by line
+	for scanner.Scan() {
+		line := scanner.Text()
+		fmt.Println(line)
+	}
+
+	// Check for errors during scanning
+	if err := scanner.Err(); err != nil {
+		fmt.Println("Error reading file:", err)
+	}
 }
 
 func handleError(err error) {
