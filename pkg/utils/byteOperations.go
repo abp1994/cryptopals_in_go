@@ -10,7 +10,7 @@ import (
 
 func XorBytes(a, b []byte) ([]byte, error) {
 	if len(a) != len(b) {
-		return nil, errors.New("Length of Byte slices not equal!")
+		return nil, errors.New("error - Length of Byte slices not equal")
 	}
 
 	result := make([]byte, len(a))
@@ -34,7 +34,7 @@ func SingleByteXOR(key byte, byteSlice []byte) []byte {
 }
 
 func CrackSingleByteXor(ciphertext []byte) ([]byte, byte, float32) {
-	plaintext := make([]byte, len(ciphertext))
+	var plaintext = make([]byte, len(ciphertext))
 	var lowestScore float32 = math.MaxFloat32
 	var lowestScoreKey byte = 'A'
 	lowestScoringPlaintext := ciphertext
@@ -84,8 +84,44 @@ func FindHammingDistance(bytes1, bytes2 []byte) (int, error) {
 	return distance, nil
 }
 
+func FindNormalisedHammingDistance(bytes1, bytes2 []byte) (float32, error) {
+	distance, _ := FindHammingDistance(bytes1, bytes2)
+	normalisedDistance := float32(distance) / float32(len(bytes1))
+	return normalisedDistance, nil
+}
+
+func FindKeySize(ciphertext []byte, maxKeySize int) int {
+
+	bestKeySize := 1
+	var lowestNormalisedDistance float32 = math.MaxFloat32
+
+	for keysize := 1; keysize <= maxKeySize; keysize++ {
+		block1 := ciphertext[0:keysize]
+		block2 := ciphertext[keysize : keysize*2]
+		block3 := ciphertext[keysize*2 : keysize*3]
+
+		fmt.Println("b1", block1)
+		fmt.Println("b2", block2)
+		fmt.Println("b3", block3)
+		normalDistance1, _ := FindNormalisedHammingDistance(block1, block2)
+		normalDistance2, _ := FindNormalisedHammingDistance(block2, block3)
+		normalDistance3, _ := FindNormalisedHammingDistance(block1, block3)
+		normalAverageDistance := (normalDistance1 + normalDistance2 + normalDistance3) / 3
+		fmt.Printf("avdist %f\n", normalAverageDistance)
+		fmt.Println("ks", keysize)
+		fmt.Println("")
+		if normalAverageDistance < lowestNormalisedDistance {
+			lowestNormalisedDistance = normalAverageDistance
+			fmt.Println("stuff", lowestNormalisedDistance)
+			bestKeySize = keysize
+		}
+	}
+
+	return bestKeySize
+}
+
 var nonAlphabeticCharPattern = regexp.MustCompile(`[^a-zA-Z]+`)
-var desirableCharPattern = regexp.MustCompile(`[\w\s,.'!-"\(\)\&%-]`)
+var desirableTextCharPattern = regexp.MustCompile(`[\w\s,.'!-"\(\)\&%-]`)
 
 // Normalised ascii character frequencies.
 var englishCharFreq = map[byte]float32{
@@ -134,7 +170,7 @@ func EnglishTextScorer(text []byte) float32 {
 	}
 
 	// Reject text with high undesirable character proportion.
-	undesirableCharOnlyText := desirableCharPattern.ReplaceAll(text, []byte(""))
+	undesirableCharOnlyText := desirableTextCharPattern.ReplaceAll(text, []byte(""))
 	undesirableCharProportion := float32(len(undesirableCharOnlyText)) / textLength
 	if 0.1 < undesirableCharProportion {
 		return rejectionValue

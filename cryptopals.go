@@ -86,7 +86,7 @@ func c4() {
 		// Decode the hex-encoded data into the decoded byte slice.
 		n, err := hex.Decode(ciphertext, ciphertextHex)
 		if err != nil {
-			fmt.Println("Error decoding base64:", err)
+			fmt.Println("error decoding hex:", err)
 		}
 
 		// Trim any extra capacity in the decoded byte slice.
@@ -114,15 +114,48 @@ func c5() {
 	key := []byte("ICE")
 	ciphertext := utils.RepeatingKeyXor(key, plaintext)
 
-	fmt.Println("Plaintext:", string(plaintext))
-	fmt.Println("Key:", string(key))
-	fmt.Println("Ciphertext hex:", hex.EncodeToString(ciphertext))
+	fmt.Println("Plaintext      :", string(plaintext))
+	fmt.Println("Key            :", string(key))
+	fmt.Println("Ciphertext hex :", hex.EncodeToString(ciphertext))
 }
+
 func c6() {
 	fmt.Println("\n-- Challenge 6 - Break repeating-key XOR --")
-	x, err := utils.FindHammingDistance([]byte("this is a test"), []byte("wokka wokka!!!"))
+	text1 := []byte("this is a test")
+	text2 := []byte("wokka wokka!!!")
+
+	testDistance, err := utils.FindHammingDistance(text1, text2)
 	handleError(err)
-	fmt.Println(x)
+
+	fmt.Println("-- Part 1 --")
+	fmt.Println("String 1         :", string(text1))
+	fmt.Println("String 2         :", string(text2))
+	fmt.Println("Hamming distance :", testDistance)
+	fmt.Println("-- Part 2 --")
+
+	ciphertextLinesB64 := utils.ImportTxtLines("res/data_S1C6.txt")
+
+	// Concatenate slices using a loop
+	var ciphertextB64 []byte
+	for _, slice := range ciphertextLinesB64 {
+		ciphertextB64 = append(ciphertextB64, slice...)
+	}
+
+	// Create a byte slice to store the decoded data.
+	ciphertext := make([]byte, base64.StdEncoding.DecodedLen(len(ciphertextB64)))
+
+	// Decode the base64-encoded data into the decoded byte slice.
+	n, err := base64.StdEncoding.Decode(ciphertext, ciphertextB64)
+	if err != nil {
+		fmt.Println("error decoding hex:", err)
+	}
+
+	// Trim any extra capacity in the decoded byte slice.
+	ciphertext = ciphertext[:n]
+
+	//Find Best Keylength
+	keySize := utils.FindKeySize(ciphertext, 40)
+	fmt.Println("Keysize :", keySize)
 }
 
 func handleError(err error) {
