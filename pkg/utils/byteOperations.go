@@ -32,7 +32,7 @@ func SingleByteXOR(key byte, byteSlice []byte) []byte {
 	return result
 }
 
-func CrackSingleByteXor(ciphertext []byte) ([]byte, byte, float32, error) {
+func CrackSingleByteXor(ciphertext []byte) ([]byte, byte, float32) {
 	plaintext := make([]byte, len(ciphertext))
 	var lowestScore float32 = math.MaxFloat32
 	var lowestScoreKey byte = 'A'
@@ -47,7 +47,7 @@ func CrackSingleByteXor(ciphertext []byte) ([]byte, byte, float32, error) {
 			lowestScoringPlaintext = plaintext
 		}
 	}
-	return lowestScoringPlaintext, lowestScoreKey, lowestScore, nil
+	return lowestScoringPlaintext, lowestScoreKey, lowestScore
 
 }
 

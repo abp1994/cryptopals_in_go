@@ -22,12 +22,11 @@ func c1() {
 	plaintextHex := "49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d"
 	plaintextBytes, err := hex.DecodeString(plaintextHex)
 	handleError(err)
-
 	plaintextB64 := base64.StdEncoding.EncodeToString(plaintextBytes)
 
-	fmt.Println("Hex Plaintext:", plaintextHex)
-	fmt.Println("Bytes Plaintext:", string(plaintextBytes))
-	fmt.Println("Base 64 plaintext:", plaintextB64)
+	fmt.Println("Hex Plaintext     :", plaintextHex)
+	fmt.Println("Bytes Plaintext   :", string(plaintextBytes))
+	fmt.Println("Base 64 plaintext :", plaintextB64)
 }
 
 func c2() {
@@ -38,17 +37,19 @@ func c2() {
 
 	ciphertext, err := hex.DecodeString(ciphertextHex)
 	handleError(err)
+
 	key, err := hex.DecodeString(keyHex)
+	handleError(err)
 
 	plaintext, err := utils.XorBytes(ciphertext, key)
 	handleError(err)
 
 	plaintextHex := hex.EncodeToString(plaintext)
 
-	fmt.Println("Hex ciphertext:", ciphertextHex)
-	fmt.Println("Key:", string(key))
-	fmt.Println("Plaintext:", string(plaintext))
-	fmt.Println("Hex encoded plaintext:", plaintextHex)
+	fmt.Println("Hex ciphertext        :", ciphertextHex)
+	fmt.Println("Key                   :", string(key))
+	fmt.Println("Plaintext             :", string(plaintext))
+	fmt.Println("Hex encoded plaintext :", plaintextHex)
 
 }
 
@@ -58,13 +59,12 @@ func c3() {
 	ciphertextHex := "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736"
 	ciphertext, err := hex.DecodeString(ciphertextHex)
 	handleError(err)
-	plaintext, key, score, err := utils.CrackSingleByteXor(ciphertext)
-	handleError(err)
+	plaintext, key, score := utils.CrackSingleByteXor(ciphertext)
 
-	fmt.Println("Ciphertext: ", string(ciphertext))
-	fmt.Printf("Lowest Chi-Square score: %f\n", score)
-	fmt.Println("Corresponding Key: ", string(key))
-	fmt.Println("Lowest scoring plaintext: ", string(plaintext))
+	fmt.Println("Ciphertext              :", string(ciphertext))
+	fmt.Printf("Lowest Chi-Square score : %f\n", score)
+	fmt.Println("Corresponding Key       :", string(key))
+	fmt.Println("Corresponding plaintext :", string(plaintext))
 
 }
 
@@ -74,9 +74,10 @@ func c4() {
 
 	var lowestScore float32 = math.MaxFloat32
 	var lowestScoreKey byte = 'A'
-	lowestScoringPlaintext := []byte("AAAAAAAAAAAAAAAA")
+	lowestScoringPlaintext := make([]byte, hex.DecodedLen(len(dataHex[0])))
+	var lowestScoringLine int = 0
 
-	for _, ciphertextHex := range dataHex {
+	for i, ciphertextHex := range dataHex {
 		// Create a byte slice to store the decoded data
 		ciphertext := make([]byte, hex.DecodedLen(len(ciphertextHex)))
 
@@ -89,11 +90,19 @@ func c4() {
 		// Trim any extra capacity in the decoded byte slice
 		ciphertext = ciphertext[:n]
 
-		//
+		//Crack single byte XOR and record key and score
+		plaintext, key, score := utils.CrackSingleByteXor(ciphertext)
+		if score < lowestScore {
+			lowestScore = score
+			lowestScoreKey = key
+			lowestScoringPlaintext = plaintext
+			lowestScoringLine = i
+		}
 	}
-	println(lowestScore)
-	println(lowestScoreKey)
-	println(lowestScoringPlaintext)
+	fmt.Printf("Lowest Chi-Square score : %f\n", lowestScore)
+	fmt.Println("Corresponding line      :", lowestScoringLine)
+	fmt.Println("Corresponding Key       :", string(lowestScoreKey))
+	fmt.Println("Corresponding plaintext :", string(lowestScoringPlaintext))
 }
 
 func handleError(err error) {
