@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math"
 	"regexp"
+	"sort"
 )
 
 func XorBytes(a, b []byte) ([]byte, error) {
@@ -90,34 +91,46 @@ func FindNormalisedHammingDistance(bytes1, bytes2 []byte) (float32, error) {
 	return normalisedDistance, nil
 }
 
-func FindKeySize(ciphertext []byte, maxKeySize int) int {
+type IntFloatPair struct {
+	IntValue   int
+	FloatValue float32
+}
 
-	bestKeySize := 1
-	var lowestNormalisedDistance float32 = math.MaxFloat32
+func FindBestKeySizes(ciphertext []byte, maxKeySize int, samplesPerKeysize int) []IntFloatPair {
 
-	for keysize := 1; keysize <= maxKeySize; keysize++ {
-		block1 := ciphertext[0:keysize]
-		block2 := ciphertext[keysize : keysize*2]
-		block3 := ciphertext[keysize*2 : keysize*3]
+	scoredKeySizes := make([]IntFloatPair, maxKeySize-1)
+	normalHammingDistances := make([]float32, samplesPerKeysize)
 
-		fmt.Println("b1", block1)
-		fmt.Println("b2", block2)
-		fmt.Println("b3", block3)
-		normalDistance1, _ := FindNormalisedHammingDistance(block1, block2)
-		normalDistance2, _ := FindNormalisedHammingDistance(block2, block3)
-		normalDistance3, _ := FindNormalisedHammingDistance(block1, block3)
-		normalAverageDistance := (normalDistance1 + normalDistance2 + normalDistance3) / 3
-		fmt.Printf("avdist %f\n", normalAverageDistance)
-		fmt.Println("ks", keysize)
-		fmt.Println("")
-		if normalAverageDistance < lowestNormalisedDistance {
-			lowestNormalisedDistance = normalAverageDistance
-			fmt.Println("stuff", lowestNormalisedDistance)
-			bestKeySize = keysize
+	for keysize := 1; keysize < maxKeySize; keysize++ {
+		for pairIndex := 0; pairIndex < samplesPerKeysize; pairIndex++ {
+			// Take adjacent keysize size blocks.
+			startIndex1 := (2 * pairIndex) * keysize
+			endIndex1 := (2*pairIndex + 1) * keysize
+			endIndex2 := (2*pairIndex + 2) * keysize
+
+			block1 := ciphertext[startIndex1:endIndex1]
+			block2 := ciphertext[endIndex1:endIndex2]
+
+			// Find normalised Hamming distance.
+			normalHammingDistances[pairIndex], _ = FindNormalisedHammingDistance(block1, block2)
 		}
-	}
 
-	return bestKeySize
+		//Calculate average normalised Hamming distance.
+		totalNormalHammingDistance := float32(0)
+		for _, number := range normalHammingDistances {
+			totalNormalHammingDistance += number
+		}
+		avgNormalHammingDistance := totalNormalHammingDistance / float32(samplesPerKeysize)
+
+		//Save score for key size.
+		scoredKeySizes[keysize-1] = IntFloatPair{keysize, avgNormalHammingDistance}
+	}
+	// Sort keysizes in ascending order by relative score.
+	sort.Slice(scoredKeySizes, func(i, j int) bool {
+		return scoredKeySizes[i].FloatValue < scoredKeySizes[j].FloatValue
+	})
+
+	return scoredKeySizes
 }
 
 var nonAlphabeticCharPattern = regexp.MustCompile(`[^a-zA-Z]+`)

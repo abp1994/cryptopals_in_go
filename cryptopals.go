@@ -76,7 +76,7 @@ func c4() {
 	var lowestScore float32 = math.MaxFloat32
 	var lowestScoreKey byte = 'A'
 	lowestScoringPlaintext := make([]byte, hex.DecodedLen(len(dataHex[0])))
-	var lowestScoringLine int = 0
+	lowestScoringLine := 0
 
 	// Crack lines of text.
 	for i, ciphertextHex := range dataHex {
@@ -154,7 +154,7 @@ func c6() {
 	ciphertext = ciphertext[:n]
 
 	//Find Best Keylength
-	keySize := utils.FindKeySize(ciphertext, 40)
+	keySize := utils.FindBestKeySizes(ciphertext, 40, 10)
 	fmt.Println("Keysize :", keySize)
 }
 
