@@ -98,18 +98,18 @@ type IntFloatPair struct {
 
 func FindBestKeySizes(ciphertext []byte, maxKeySize int, samplesPerKeysize int) []IntFloatPair {
 
-	scoredKeySizes := make([]IntFloatPair, maxKeySize-1)
-	normalHammingDistances := make([]float32, samplesPerKeysize)
+	scoredKeySizes := make([]IntFloatPair, maxKeySize)
 
-	for keysize := 1; keysize < maxKeySize; keysize++ {
+	for keysize := 1; keysize <= maxKeySize; keysize++ {
+		normalHammingDistances := make([]float32, samplesPerKeysize)
 		for pairIndex := 0; pairIndex < samplesPerKeysize; pairIndex++ {
 			// Take adjacent keysize size blocks.
-			startIndex1 := (2 * pairIndex) * keysize
-			endIndex1 := (2*pairIndex + 1) * keysize
-			endIndex2 := (2*pairIndex + 2) * keysize
+			startIndex := (2 * pairIndex) * keysize
+			middleIndex := (2*pairIndex + 1) * keysize
+			endIndex := (2*pairIndex + 2) * keysize
 
-			block1 := ciphertext[startIndex1:endIndex1]
-			block2 := ciphertext[endIndex1:endIndex2]
+			block1 := ciphertext[startIndex:middleIndex]
+			block2 := ciphertext[middleIndex:endIndex]
 
 			// Find normalised Hamming distance.
 			normalHammingDistances[pairIndex], _ = FindNormalisedHammingDistance(block1, block2)
