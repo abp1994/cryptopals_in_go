@@ -37,8 +37,8 @@ func SingleByteXOR(key byte, byteSlice []byte) []byte {
 func CrackSingleByteXor(ciphertext []byte) ([]byte, byte, float32) {
 	var plaintext = make([]byte, len(ciphertext))
 	var lowestScore float32 = math.MaxFloat32
-	var lowestScoreKey byte = 'A'
-	lowestScoringPlaintext := ciphertext
+	var lowestScoreKey byte = '*'
+	var lowestScoringPlaintext = make([]byte, len(ciphertext))
 
 	for i := 0; i <= 255; i++ {
 		plaintext = SingleByteXOR(byte(i), ciphertext)
@@ -46,7 +46,7 @@ func CrackSingleByteXor(ciphertext []byte) ([]byte, byte, float32) {
 		if newScore < lowestScore {
 			lowestScore = newScore
 			lowestScoreKey = byte(i)
-			lowestScoringPlaintext = plaintext
+			copy(lowestScoringPlaintext, plaintext)
 		}
 	}
 	return lowestScoringPlaintext, lowestScoreKey, lowestScore
@@ -133,8 +133,69 @@ func FindBestKeySizes(ciphertext []byte, maxKeySize int, samplesPerKeysize int) 
 	return scoredKeySizes
 }
 
+// Transpose transposes a 2D byte slice.
+func Transpose(matrix [][]byte) [][]byte {
+	if len(matrix) == 0 {
+		return nil
+	}
+
+	rowCount := len(matrix)
+	colCount := len(matrix[0])
+
+	transposed := make([][]byte, colCount)
+	for i := range transposed {
+		transposed[i] = make([]byte, rowCount)
+	}
+
+	for i := 0; i < rowCount; i++ {
+		for j := 0; j < colCount; j++ {
+			transposed[j][i] = matrix[i][j]
+		}
+	}
+
+	return transposed
+}
+
+func FillMatrixFromList(data []byte, colCount int) [][]byte {
+
+	//Find max number of rows by using floor division.
+	rowCount := len(data) / colCount
+
+	//Create a matrix of rowCount x colCount size.
+	matrix := make([][]byte, rowCount)
+	for row := range matrix {
+		matrix[row] = make([]byte, colCount)
+	}
+
+	// Populate the matrix.
+	for rowIndex := 0; rowIndex < rowCount; rowIndex++ {
+		for colIndex := 0; colIndex < colCount; colIndex++ {
+			matrix[rowIndex][colIndex] = data[rowIndex*colCount+colIndex]
+		}
+	}
+	return matrix
+}
+
+func FindKey(keysize int, data []byte) []byte {
+
+	matrix := FillMatrixFromList(data, keysize)
+	matrixTransposed := Transpose(matrix)
+
+	// Process each transposed row and find the most promising key.
+	var outputList [][]byte
+	for _, row := range matrixTransposed {
+		_, keyByte, _ := CrackSingleByteXor(row)
+		//fmt.Println(string(secret))
+		outputList = append(outputList, []byte{keyByte})
+	}
+
+	// Return most promising key of keySize size.
+	return bytes.Join(outputList, nil)
+
+}
+
 var nonAlphabeticCharPattern = regexp.MustCompile(`[^a-zA-Z]+`)
-var desirableTextCharPattern = regexp.MustCompile(`[\w\s,.'!-"\(\)\&%-]`)
+var desirableTextCharPattern = regexp.MustCompile(`[\w\s,.'!-"\(\)\&%@#~-]`)
 
 // Normalised ascii character frequencies.
 var englishCharFreq = map[byte]float32{
@@ -171,21 +232,16 @@ func EnglishTextScorer(text []byte) float32 {
 	rejectionValue := float32(math.MaxFloat32)
 
 	// Prescreen
-	// Reject text with low letter proportion.
-
-	alphaOnlyText := make([]byte, len(text))
-	copy(alphaOnlyText, text)
-
-	alphaOnlyText = nonAlphabeticCharPattern.ReplaceAll(alphaOnlyText, []byte(""))
-	alphabeticCharProportion := float32(len(alphaOnlyText)) / textLength
-	if alphabeticCharProportion < 0.7 {
+	// Reject text with undesirable character proportion.
+	undesirableCharOnlyText := desirableTextCharPattern.ReplaceAll(text, []byte(""))
+	if 0 < len(undesirableCharOnlyText) {
 		return rejectionValue
 	}
 
-	// Reject text with high undesirable character proportion.
-	undesirableCharOnlyText := desirableTextCharPattern.ReplaceAll(text, []byte(""))
-	undesirableCharProportion := float32(len(undesirableCharOnlyText)) / textLength
-	if 0.1 < undesirableCharProportion {
+	// Reject text with low letter proportion.
+	alphaOnlyText := nonAlphabeticCharPattern.ReplaceAll(text, []byte(""))
+	alphabeticCharProportion := float32(len(alphaOnlyText)) / textLength
+	if alphabeticCharProportion < 0.6 {
 		return rejectionValue
 	}
 

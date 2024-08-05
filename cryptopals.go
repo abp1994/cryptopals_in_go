@@ -74,7 +74,7 @@ func c4() {
 	dataHex := utils.ImportTxtLines("res/data_S1C4.txt")
 
 	var lowestScore float32 = math.MaxFloat32
-	var lowestScoreKey byte = 'A'
+	var lowestScoreKey byte
 	lowestScoringPlaintext := make([]byte, hex.DecodedLen(len(dataHex[0])))
 	lowestScoringLine := 0
 
@@ -97,7 +97,7 @@ func c4() {
 		if score < lowestScore {
 			lowestScore = score
 			lowestScoreKey = key
-			lowestScoringPlaintext = plaintext
+			copy(lowestScoringPlaintext, plaintext)
 			lowestScoringLine = i
 		}
 	}
@@ -154,8 +154,16 @@ func c6() {
 	ciphertext = ciphertext[:n]
 
 	//Find Best Keylength
-	keySize := utils.FindBestKeySizes(ciphertext, 40, 10)
-	fmt.Println("Keysize :", keySize)
+	likelyKeySize := utils.FindBestKeySizes(ciphertext, 40, 10)[0:3]
+
+	// Find highest scoring key for top 3 keysizes.
+	//var first3Ints []int
+	for _, entry := range likelyKeySize[:3] { // Iterate over the first 3 elements
+		Keylength := entry.IntValue
+		key := utils.FindKey(Keylength, ciphertext)
+		fmt.Println(string(key))
+	}
+	fmt.Println("Highest Scoring Keysizes :", likelyKeySize)
 }
 
 func handleError(err error) {
