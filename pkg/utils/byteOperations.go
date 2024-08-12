@@ -232,7 +232,7 @@ func EnglishTextScorer(text []byte) float32 {
 	rejectionValue := float32(math.MaxFloat32)
 
 	// Prescreen
-	// Reject text with undesirable character proportion.
+	// Reject texts containing undesirable characters.
 	undesirableCharOnlyText := desirableTextCharPattern.ReplaceAll(text, []byte(""))
 	if 0 < len(undesirableCharOnlyText) {
 		return rejectionValue
