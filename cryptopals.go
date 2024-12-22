@@ -153,17 +153,40 @@ func c6() {
 	// Trim any extra capacity in the decoded byte slice.
 	ciphertext = ciphertext[:n]
 
-	//Find Best Keylength
-	likelyKeySize := utils.FindBestKeySizes(ciphertext, 40, 10)[0:3]
+	//Find Best Keylength.
+	likelyKeySizes := utils.FindBestKeySizes(ciphertext, 40, 10)[0:3]
+
+	// Define a struct to hold the key, score, and secret
+	type Record struct {
+		Key    []byte
+		Score  float32
+		Secret []byte
+	}
+
+	table := []Record{}
 
 	// Find highest scoring key for top 3 keysizes.
-	//var first3Ints []int
-	for _, entry := range likelyKeySize[:3] { // Iterate over the first 3 elements
+	for _, entry := range likelyKeySizes[:3] { // Iterate over the first 3 elements.
 		Keylength := entry.IntValue
 		key := utils.FindKey(Keylength, ciphertext)
-		fmt.Println(string(key))
+		secret := utils.RepeatingKeyXor(key, ciphertext)
+		score := utils.EnglishTextScorer(secret)
+
+		table = append(table, Record{Key: key, Score: score, Secret: secret})
 	}
-	fmt.Println("Highest Scoring Keysizes :", likelyKeySize)
+
+	for _, record := range table {
+		fmt.Printf("Key: %s, Score: %.2f, Secret: %s\n", string(record.Key), record.Score, string(record.Secret))
+	}
+
+
+
+
+	fmt.Println("Most likely key sizes and scores :", likelyKeySizes)
+	fmt.Println("Highest score         : ")
+	fmt.Println("Corresponding Key     : ")
+	fmt.Println("Secret                : \n{decode(secret[:90])}...")
+
 }
 
 func handleError(err error) {
