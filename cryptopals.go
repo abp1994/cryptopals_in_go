@@ -175,17 +175,18 @@ func c6() {
 		table = append(table, Record{Key: key, Score: score, Secret: secret})
 	}
 
-	for _, record := range table {
-		fmt.Printf("Key: %s, Score: %.2f, Secret: %s\n", string(record.Key), record.Score, string(record.Secret))
+	// Find the record with the lowest Score
+	lowest := table[0] // Start with the first record as the lowest
+	for _, record := range table[1:] {
+		if record.Score < lowest.Score {
+			lowest = record
+		}
 	}
 
-
-
-
 	fmt.Println("Most likely key sizes and scores :", likelyKeySizes)
-	fmt.Println("Highest score         : ")
-	fmt.Println("Corresponding Key     : ")
-	fmt.Println("Secret                : \n{decode(secret[:90])}...")
+	fmt.Println("Lowest score         : ", lowest.Score)
+	fmt.Println("Corresponding Key     : ", string(lowest.Key))
+	fmt.Println("Secret                : \n", string(lowest.Secret))
 
 }
 
