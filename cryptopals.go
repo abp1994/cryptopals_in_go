@@ -185,8 +185,8 @@ func c6() {
 
 	fmt.Println("Most likely key sizes and scores :", likelyKeySizes)
 	fmt.Println("Lowest score         : ", lowest.Score)
-	fmt.Println("Corresponding Key     : ", string(lowest.Key))
-	fmt.Println("Secret                : \n", string(lowest.Secret))
+	fmt.Println("Corresponding Key    : ", string(lowest.Key))
+	fmt.Println("Secret               : \n", string(lowest.Secret))
 
 }
 
