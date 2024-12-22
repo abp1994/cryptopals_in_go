@@ -165,7 +165,7 @@ func c6() {
 
 	table := []Record{}
 
-	// Find highest scoring key for top 3 keysizes.
+	// Find the record with the lowest Score for top 3 keysizes.
 	for _, entry := range likelyKeySizes[:3] { // Iterate over the first 3 elements.
 		Keylength := entry.IntValue
 		key := utils.FindKey(Keylength, ciphertext)
@@ -175,7 +175,6 @@ func c6() {
 		table = append(table, Record{Key: key, Score: score, Secret: secret})
 	}
 
-	// Find the record with the lowest Score
 	lowest := table[0] // Start with the first record as the lowest
 	for _, record := range table[1:] {
 		if record.Score < lowest.Score {
