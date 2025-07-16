@@ -102,7 +102,7 @@ func FindBestKeySizes(ciphertext []byte, maxKeySize int, samplesPerKeysize int) 
 
 	for keysize := 1; keysize <= maxKeySize; keysize++ {
 		normalHammingDistances := make([]float32, samplesPerKeysize)
-		for pairIndex := 0; pairIndex < samplesPerKeysize; pairIndex++ {
+		for pairIndex := range samplesPerKeysize {
 			// Take adjacent keysize size blocks.
 			startIndex := (2 * pairIndex) * keysize
 			middleIndex := (2*pairIndex + 1) * keysize
@@ -147,8 +147,8 @@ func Transpose(matrix [][]byte) [][]byte {
 		transposed[i] = make([]byte, rowCount)
 	}
 
-	for i := 0; i < rowCount; i++ {
-		for j := 0; j < colCount; j++ {
+	for i := range matrix {
+		for j := range matrix[0] {
 			transposed[j][i] = matrix[i][j]
 		}
 	}
@@ -167,9 +167,9 @@ func FillMatrixFromList(data []byte, colCount int) [][]byte {
 		matrix[row] = make([]byte, colCount)
 	}
 
-	// Populate the matrix.
-	for rowIndex := 0; rowIndex < rowCount; rowIndex++ {
-		for colIndex := 0; colIndex < colCount; colIndex++ {
+	// Populate the matrix using range.
+	for rowIndex := range matrix {
+		for colIndex := range matrix[rowIndex] {
 			matrix[rowIndex][colIndex] = data[rowIndex*colCount+colIndex]
 		}
 	}

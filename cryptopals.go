@@ -110,7 +110,9 @@ func c4() {
 func c5() {
 	fmt.Println("\n-- Challenge 5 - Implement repeating-key XOR --")
 
-	plaintext := []byte("Burning 'em, if you ain't quick and nimble\nI go crazy when I hear a cymbal")
+	plaintext := []byte(
+		"Burning 'em, if you ain't quick and nimble\nI go crazy when I hear a cymbal",
+	)
 	key := []byte("ICE")
 	ciphertext := utils.RepeatingKeyXor(key, plaintext)
 
@@ -186,7 +188,6 @@ func c6() {
 	fmt.Println("Lowest score         : ", lowest.Score)
 	fmt.Println("Corresponding Key    : ", string(lowest.Key))
 	fmt.Println("Secret               : \n", string(lowest.Secret))
-
 }
 
 func handleError(err error) {
