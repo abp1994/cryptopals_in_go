@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"math"
+	"slices"
 
 	"github.com/abp1994/cryptopals_in_go/pkg/utils"
 )
@@ -137,11 +138,8 @@ func c6() {
 
 	ciphertextLinesB64 := utils.ImportTxtLines("res/data_S1C6.txt")
 
-	// Concatenate slices using a loop
-	var ciphertextB64 []byte
-	for _, slice := range ciphertextLinesB64 {
-		ciphertextB64 = append(ciphertextB64, slice...)
-	}
+	// Concatenate slices
+	ciphertextB64 := slices.Concat(ciphertextLinesB64...)
 
 	// Create a byte slice to store the decoded data.
 	ciphertext := make([]byte, base64.StdEncoding.DecodedLen(len(ciphertextB64)))
@@ -160,9 +158,8 @@ func c6() {
 
 	// Define a struct to hold the key, score, and secret
 	type Record struct {
-		Key    []byte
-		Score  float32
-		Secret []byte
+		Key, Secret []byte
+		Score       float32
 	}
 
 	table := []Record{}
