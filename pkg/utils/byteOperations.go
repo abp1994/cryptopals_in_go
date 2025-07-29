@@ -52,12 +52,12 @@ func CrackSingleByteXor(ciphertext []byte) ([]byte, byte, float32) {
 	return lowestScoringPlaintext, lowestScoreKey, lowestScore
 }
 
-func RepeatingKeyXor(key []byte, byteslice []byte) []byte {
+func RepeatingKeyXor(key, data []byte) []byte {
 
-	targetLength := len(byteslice)
+	targetLength := len(data)
 	repeatedKey := bytes.Repeat(key, (targetLength+len(key)-1)/len(key))
 
-	result, _ := XorBytes(repeatedKey[:targetLength], byteslice)
+	result, _ := XorBytes(repeatedKey[:targetLength], data)
 	return result
 }
 
@@ -85,9 +85,9 @@ func FindHammingDistance(bytes1, bytes2 []byte) (int, error) {
 	return distance, nil
 }
 
-func FindNormalisedHammingDistance(bytes1, bytes2 []byte) (float32, error) {
-	distance, _ := FindHammingDistance(bytes1, bytes2)
-	normalisedDistance := float32(distance) / float32(len(bytes1))
+func FindNormalisedHammingDistance(a, b []byte) (float32, error) {
+	distance, _ := FindHammingDistance(a, b)
+	normalisedDistance := float32(distance) / float32(len(a))
 	return normalisedDistance, nil
 }
 
