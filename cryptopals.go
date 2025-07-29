@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math"
 	"slices"
+	"sort"
 
 	"github.com/abp1994/cryptopals_in_go/pkg/utils"
 )
@@ -156,7 +157,7 @@ func c6() {
 	//Find Best Keylength.
 	likelyKeySizes := utils.FindBestKeySizes(ciphertext, 40, 10)[0:3]
 
-	// Define a struct to hold the key, score, and secret
+	// Define a struct to hold the key, score, and secret.
 	type Record struct {
 		Key, Secret []byte
 		Score       float32
@@ -170,16 +171,14 @@ func c6() {
 		key := utils.FindKey(Keylength, ciphertext)
 		secret := utils.RepeatingKeyXor(key, ciphertext)
 		score := utils.EnglishTextScorer(secret)
-
 		table = append(table, Record{Key: key, Score: score, Secret: secret})
 	}
 
-	lowest := table[0] // Start with the first record as the lowest
-	for _, record := range table[1:] {
-		if record.Score < lowest.Score {
-			lowest = record
-		}
-	}
+	// Find lowest score.
+	sort.Slice(table, func(i, j int) bool {
+		return table[i].Score < table[j].Score
+	})
+	lowest := table[0]
 
 	fmt.Println("Most likely key sizes and scores :", likelyKeySizes)
 	fmt.Println("Lowest score         : ", lowest.Score)
