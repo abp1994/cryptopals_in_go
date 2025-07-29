@@ -61,14 +61,14 @@ func RepeatingKeyXor(key, data []byte) []byte {
 	return result
 }
 
-func FindHammingDistance(bytes1, bytes2 []byte) (int, error) {
+func FindHammingDistance(a, b []byte) (int, error) {
 	// Check if the input slices have equal length
-	if len(bytes1) != len(bytes2) {
-		return 0, fmt.Errorf("input slices must have equal length")
+	if len(a) != len(b) {
+		return 0, fmt.Errorf("Input slices must have equal length")
 	}
 
 	// XOR the two slices to find differing bits
-	xorResult, err := XorBytes(bytes1, bytes2)
+	xorResult, err := XorBytes(a, b)
 	if err != nil {
 		return 0, err
 	}
@@ -96,7 +96,7 @@ type IntFloatPair struct {
 	FloatValue float32
 }
 
-func FindBestKeySizes(ciphertext []byte, maxKeySize int, samplesPerKeysize int) []IntFloatPair {
+func FindBestKeySizes(ciphertext []byte, maxKeySize, samplesPerKeysize int) []IntFloatPair {
 
 	scoredKeySizes := make([]IntFloatPair, maxKeySize)
 
