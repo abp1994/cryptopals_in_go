@@ -24,11 +24,11 @@ func XorBytes(a, b []byte) ([]byte, error) {
 	return result, nil
 }
 
-func SingleByteXOR(key byte, byteSlice []byte) []byte {
+func SingleByteXOR(key byte, data []byte) []byte {
 
-	result := make([]byte, len(byteSlice))
+	result := make([]byte, len(data))
 
-	for i, currentByte := range byteSlice {
+	for i, currentByte := range data {
 		result[i] = key ^ currentByte
 	}
 	return result
