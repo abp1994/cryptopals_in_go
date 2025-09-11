@@ -13,8 +13,11 @@ func ImportTxtLines(filepath string) [][]byte {
 		log.Fatal(err)
 	}
 	// remember to close the file at the end of the program
-	defer f.Close()
-
+	defer func() {
+		if cerr := f.Close(); cerr != nil {
+			log.Printf("warning: error closing file %s: %v", filepath, cerr)
+		}
+	}()
 	// read the file line by line using scanner
 	scanner := bufio.NewScanner(f)
 	var result [][]byte

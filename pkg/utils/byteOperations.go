@@ -35,13 +35,12 @@ func SingleByteXOR(key byte, data []byte) []byte {
 }
 
 func CrackSingleByteXor(ciphertext []byte) ([]byte, byte, float32) {
-	var plaintext = make([]byte, len(ciphertext))
 	var lowestScore float32 = math.MaxFloat32
 	var lowestScoreKey byte = '*'
 	var lowestScoringPlaintext = make([]byte, len(ciphertext))
 
 	for i := 0; i <= 255; i++ {
-		plaintext = SingleByteXOR(byte(i), ciphertext)
+		plaintext := SingleByteXOR(byte(i), ciphertext)
 		newScore := EnglishTextScorer(plaintext)
 		if newScore < lowestScore {
 			lowestScore = newScore
@@ -64,7 +63,7 @@ func RepeatingKeyXor(key, data []byte) []byte {
 func FindHammingDistance(a, b []byte) (int, error) {
 	// Check if the input slices have equal length
 	if len(a) != len(b) {
-		return 0, fmt.Errorf("Input slices must have equal length")
+		return 0, fmt.Errorf("input slices must have equal length")
 	}
 
 	// XOR the two slices to find differing bits
