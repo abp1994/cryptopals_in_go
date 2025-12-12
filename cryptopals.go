@@ -5,7 +5,6 @@ import (
 	"encoding/hex"
 	"fmt"
 	"math"
-	"slices"
 	"sort"
 
 	"github.com/abp1994/cryptopals_in_go/pkg/utils"
@@ -18,6 +17,7 @@ func main() {
 	c4()
 	c5()
 	c6()
+	c7()
 }
 
 func c1() {
@@ -137,22 +137,7 @@ func c6() {
 	fmt.Println("Hamming distance :", testDistance)
 	fmt.Println("-- Part 2 --")
 
-	ciphertextLinesB64 := utils.ImportTxtLines("res/data_S1C6.txt")
-
-	// Concatenate slices
-	ciphertextB64 := slices.Concat(ciphertextLinesB64...)
-
-	// Create a byte slice to store the decoded data.
-	ciphertext := make([]byte, base64.StdEncoding.DecodedLen(len(ciphertextB64)))
-
-	// Decode the base64-encoded data into the decoded byte slice.
-	n, err := base64.StdEncoding.Decode(ciphertext, ciphertextB64)
-	if err != nil {
-		fmt.Println("error decoding hex:", err)
-	}
-
-	// Trim any extra capacity in the decoded byte slice.
-	ciphertext = ciphertext[:n]
+	ciphertext := utils.ImportB64Data("data_S1C6.txt")
 
 	//Find Best Keylength.
 	likelyKeySizes := utils.FindBestKeySizes(ciphertext, 40, 10)[0:3]
@@ -184,6 +169,19 @@ func c6() {
 	fmt.Println("Lowest score         : ", lowest.Score)
 	fmt.Println("Corresponding Key    : ", string(lowest.Key))
 	fmt.Println("Secret               : \n", string(lowest.Secret))
+}
+
+func c7() {
+	fmt.Println("\n-- Challenge 7 - AES in ECB mode --")
+
+	key := []byte("YELLOW SUBMARINE")
+	ciphertext := utils.ImportB64Data("data_S1C7.txt")
+
+	//ciphertext = b64decode(ut.import_data("data_S1C7.txt"))
+	//plaintext = ocl.AESECB(key).decrypt(ciphertext)
+
+	//fmt.Println("Key       : ", decode(key))
+	//fmt.Println("Plaintext : ", decode(plaintext))
 }
 
 func handleError(err error) {

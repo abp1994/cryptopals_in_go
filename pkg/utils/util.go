@@ -2,8 +2,11 @@ package utils
 
 import (
 	"bufio"
+	"encoding/base64"
+	"fmt"
 	"log"
 	"os"
+	"slices"
 )
 
 func ImportTxtLines(filepath string) [][]byte {
@@ -32,4 +35,26 @@ func ImportTxtLines(filepath string) [][]byte {
 	}
 
 	return result
+}
+
+func ImportB64Data(filepath string) []byte {
+
+	ciphertextLinesB64 := ImportTxtLines("res/" + filepath)
+
+	// Concatenate slices
+	ciphertextB64 := slices.Concat(ciphertextLinesB64...)
+
+	// Create a byte slice to store the decoded data.
+	ciphertext := make([]byte, base64.StdEncoding.DecodedLen(len(ciphertextB64)))
+
+	// Decode the base64-encoded data into the decoded byte slice.
+	n, err := base64.StdEncoding.Decode(ciphertext, ciphertextB64)
+	if err != nil {
+		fmt.Println("error decoding hex:", err)
+	}
+
+	// Trim any extra capacity in the decoded byte slice.
+	ciphertext = ciphertext[:n]
+
+	return ciphertext
 }
