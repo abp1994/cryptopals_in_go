@@ -28,8 +28,8 @@ func SingleByteXOR(key byte, data []byte) []byte {
 
 	result := make([]byte, len(data))
 
-	for i, b := range data {
-		result[i] = key ^ b
+	for i := range data {
+		result[i] = key ^ data[i]
 	}
 	return result
 }
