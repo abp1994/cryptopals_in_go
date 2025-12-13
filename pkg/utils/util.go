@@ -37,24 +37,21 @@ func ImportTxtLines(filepath string) [][]byte {
 	return result
 }
 
-func ImportB64Data(filepath string) []byte {
+func ImportB64Data(filepath string) ([]byte, error) {
 
-	ciphertextLinesB64 := ImportTxtLines("res/" + filepath)
-
-	// Concatenate slices
-	ciphertextB64 := slices.Concat(ciphertextLinesB64...)
-
-	// Create a byte slice to store the decoded data.
-	ciphertext := make([]byte, base64.StdEncoding.DecodedLen(len(ciphertextB64)))
-
-	// Decode the base64-encoded data into the decoded byte slice.
-	n, err := base64.StdEncoding.Decode(ciphertext, ciphertextB64)
-	if err != nil {
-		fmt.Println("error decoding hex:", err)
+	linesB64 := ImportTxtLines("res/" + filepath)
+	if len(linesB64) == 0 {
+		return nil, fmt.Errorf("no data to decode in %q", filepath)
 	}
 
-	// Trim any extra capacity in the decoded byte slice.
-	ciphertext = ciphertext[:n]
+	// Concatenate slices
+	dataB64 := slices.Concat(linesB64...)
 
-	return ciphertext
+	// Decode the base64-encoded data into a decoded byte slice.
+	decoded, err := base64.StdEncoding.DecodeString(string(dataB64))
+	if err != nil {
+		fmt.Println("base 64 decode failes: %w", err)
+	}
+
+	return decoded, nil
 }

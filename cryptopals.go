@@ -54,7 +54,6 @@ func c2() {
 	fmt.Println("Key                   :", string(key))
 	fmt.Println("Plaintext             :", string(plaintext))
 	fmt.Println("Hex encoded plaintext :", plaintextHex)
-
 }
 
 func c3() {
@@ -103,6 +102,7 @@ func c4() {
 			lowestScoringLine = i
 		}
 	}
+
 	fmt.Printf("Lowest Chi-Square score : %f\n", lowestScore)
 	fmt.Println("Corresponding line      :", lowestScoringLine)
 	fmt.Println("Corresponding Key       :", string(lowestScoreKey))
@@ -137,7 +137,7 @@ func c6() {
 	fmt.Println("Hamming distance :", testDistance)
 	fmt.Println("-- Part 2 --")
 
-	ciphertext := utils.ImportB64Data("data_S1C6.txt")
+	ciphertext, _ := utils.ImportB64Data("data_S1C6.txt")
 
 	//Find Best Keylength.
 	likelyKeySizes := utils.FindBestKeySizes(ciphertext, 40, 10)[0:3]
@@ -174,11 +174,10 @@ func c6() {
 func c7() {
 	fmt.Println("\n-- Challenge 7 - AES in ECB mode --")
 
-	key := []byte("YELLOW SUBMARINE")
-	ciphertext := utils.ImportB64Data("data_S1C7.txt")
+	//	key := []byte("YELLOW SUBMARINE")
+	//	ciphertext, _ := utils.ImportB64Data("data_S1C7.txt")
 
-	//ciphertext = b64decode(ut.import_data("data_S1C7.txt"))
-	//plaintext = ocl.AESECB(key).decrypt(ciphertext)
+	//	plaintext = ocl.AESECB(key).decrypt(ciphertext)
 
 	//fmt.Println("Key       : ", decode(key))
 	//fmt.Println("Plaintext : ", decode(plaintext))
