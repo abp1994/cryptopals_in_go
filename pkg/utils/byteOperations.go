@@ -2,7 +2,6 @@ package utils
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"math"
 	"regexp"
@@ -10,8 +9,9 @@ import (
 )
 
 func XorBytes(a, b []byte) ([]byte, error) {
+
 	if len(a) != len(b) {
-		return nil, errors.New("error - Length of Byte slices not equal")
+		return nil, fmt.Errorf("xor: slice lengths differ: %d vs %d", len(a), len(b))
 	}
 
 	result := make([]byte, len(a))
