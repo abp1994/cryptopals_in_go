@@ -53,10 +53,15 @@ func CrackSingleByteXor(ciphertext []byte) ([]byte, byte, float32) {
 
 func RepeatingKeyXor(key, data []byte) []byte {
 
-	targetLength := len(data)
-	repeatedKey := bytes.Repeat(key, (targetLength+len(key)-1)/len(key))
+	if len(key) == 0 {
+		return nil
+	}
 
-	result, _ := XorBytes(repeatedKey[:targetLength], data)
+	result := make([]byte, len(data))
+
+	for i := range data {
+		result[i] = data[i] ^ key[i%len(key)]
+	}
 	return result
 }
 
