@@ -180,7 +180,7 @@ func c7() {
 	plaintext, _ := utils.AESECBDecrypt(key, ciphertext)
 
 	fmt.Println("Key       : ", string(key))
-	fmt.Println("Plaintext : ", string(plaintext))
+	fmt.Println("Plaintext : \n", string(plaintext))
 }
 
 func handleError(err error) {
