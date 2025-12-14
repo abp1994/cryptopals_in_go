@@ -174,13 +174,13 @@ func c6() {
 func c7() {
 	fmt.Println("\n-- Challenge 7 - AES in ECB mode --")
 
-	//	key := []byte("YELLOW SUBMARINE")
-	//	ciphertext, _ := utils.ImportB64Data("data_S1C7.txt")
+	key := []byte("YELLOW SUBMARINE")
+	ciphertext, _ := utils.ImportB64Data("data_S1C7.txt")
 
-	//	plaintext = ocl.AESECB(key).decrypt(ciphertext)
+	plaintext, _ := utils.AESECBDecrypt(key, ciphertext)
 
-	//fmt.Println("Key       : ", decode(key))
-	//fmt.Println("Plaintext : ", decode(plaintext))
+	fmt.Println("Key       : ", string(key))
+	fmt.Println("Plaintext : ", string(plaintext))
 }
 
 func handleError(err error) {
