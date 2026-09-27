@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"math"
+	"math/bits"
 	"regexp"
 	"sort"
 )
@@ -34,18 +35,29 @@ func SingleByteXOR(key byte, data []byte) []byte {
 	return result
 }
 
+func SingleByteXORInto(key byte, data, result []byte) {
+	for i := range data {
+		result[i] = key ^ data[i]
+	}
+}
+
 func CrackSingleByteXor(ciphertext []byte) ([]byte, byte, float32) {
 	var lowestScore float32 = math.MaxFloat32
 	var lowestScoreKey byte = '*'
 	var lowestScoringPlaintext = make([]byte, len(ciphertext))
+	candidate := make([]byte, len(ciphertext))
 
 	for i := 0; i <= 255; i++ {
-		plaintext := SingleByteXOR(byte(i), ciphertext)
-		newScore := EnglishTextScorer(plaintext)
+
+		key := byte(i)
+
+		SingleByteXORInto(key, ciphertext, candidate)
+		newScore := EnglishTextScorer(candidate)
+
 		if newScore < lowestScore {
 			lowestScore = newScore
-			lowestScoreKey = byte(i)
-			copy(lowestScoringPlaintext, plaintext)
+			lowestScoreKey = key
+			copy(lowestScoringPlaintext, candidate)
 		}
 	}
 	return lowestScoringPlaintext, lowestScoreKey, lowestScore
@@ -71,19 +83,10 @@ func FindHammingDistance(a, b []byte) (int, error) {
 		return 0, fmt.Errorf("input slices must have equal length")
 	}
 
-	// XOR the two slices to find differing bits
-	xorResult, err := XorBytes(a, b)
-	if err != nil {
-		return 0, err
-	}
-
-	// Count the set bits in the XOR result
+	// XOR bytes and add any ones to count
 	distance := 0
-	for _, b := range xorResult {
-		for b != 0 {
-			distance++
-			b &= b - 1
-		}
+	for i := range a {
+		distance += bits.OnesCount8(a[i] ^ b[i])
 	}
 
 	return distance, nil
@@ -95,43 +98,40 @@ func FindNormalisedHammingDistance(a, b []byte) (float32, error) {
 	return normalisedDistance, nil
 }
 
-type IntFloatPair struct {
-	IntValue   int
-	FloatValue float32
+type KeySizeScore struct {
+	KeySize int
+	Score   float32
 }
 
-func FindBestKeySizes(ciphertext []byte, maxKeySize, samplesPerKeysize int) []IntFloatPair {
+func FindBestKeySizes(ciphertext []byte, maxKeySize, samplesPerKeysize int) []KeySizeScore {
 
-	scoredKeySizes := make([]IntFloatPair, maxKeySize)
+	scoredKeySizes := make([]KeySizeScore, maxKeySize)
 
-	for keysize := 1; keysize <= maxKeySize; keysize++ {
-		normalHammingDistances := make([]float32, samplesPerKeysize)
+	for keySize := 1; keySize <= maxKeySize; keySize++ {
+		//Calculate average normalised Hamming distance.
+		var totalNormalHammingDistance float32
 		for pairIndex := range samplesPerKeysize {
 			// Take adjacent keysize size blocks.
-			startIndex := (2 * pairIndex) * keysize
-			middleIndex := (2*pairIndex + 1) * keysize
-			endIndex := (2*pairIndex + 2) * keysize
+			blockStart := 2 * pairIndex * keySize
 
-			block1 := ciphertext[startIndex:middleIndex]
-			block2 := ciphertext[middleIndex:endIndex]
+			block1 := ciphertext[blockStart : blockStart+keySize]
+			block2 := ciphertext[blockStart+keySize : blockStart+2*keySize]
 
 			// Find normalised Hamming distance.
-			normalHammingDistances[pairIndex], _ = FindNormalisedHammingDistance(block1, block2)
+			distance, _ := FindNormalisedHammingDistance(block1, block2)
+			totalNormalHammingDistance += distance
 		}
 
-		//Calculate average normalised Hamming distance.
-		totalNormalHammingDistance := float32(0)
-		for _, number := range normalHammingDistances {
-			totalNormalHammingDistance += number
-		}
 		avgNormalHammingDistance := totalNormalHammingDistance / float32(samplesPerKeysize)
 
 		//Save score for key size.
-		scoredKeySizes[keysize-1] = IntFloatPair{keysize, avgNormalHammingDistance}
+		scoredKeySizes[keySize-1] = KeySizeScore{
+			KeySize: keySize,
+			Score:   avgNormalHammingDistance}
 	}
 	// Sort keysizes in ascending order by relative score.
 	sort.Slice(scoredKeySizes, func(i, j int) bool {
-		return scoredKeySizes[i].FloatValue < scoredKeySizes[j].FloatValue
+		return scoredKeySizes[i].Score < scoredKeySizes[j].Score
 	})
 
 	return scoredKeySizes
@@ -143,16 +143,16 @@ func Transpose(matrix [][]byte) [][]byte {
 		return nil
 	}
 
-	rowCount := len(matrix)
-	colCount := len(matrix[0])
+	rows := len(matrix)
+	cols := len(matrix[0])
 
-	transposed := make([][]byte, colCount)
+	transposed := make([][]byte, cols)
 	for i := range transposed {
-		transposed[i] = make([]byte, rowCount)
+		transposed[i] = make([]byte, rows)
 	}
 
 	for i := range matrix {
-		for j := range matrix[0] {
+		for j := range matrix[i] {
 			transposed[j][i] = matrix[i][j]
 		}
 	}
@@ -162,39 +162,33 @@ func Transpose(matrix [][]byte) [][]byte {
 
 func FillMatrixFromList(data []byte, colCount int) [][]byte {
 
-	//Find max number of rows by using floor division.
+	//Calculate the number of complete rows.
 	rowCount := len(data) / colCount
 
-	//Create a matrix of rowCount x colCount size.
+	//Create a matrix of rowCount x colCount size and populate.
 	matrix := make([][]byte, rowCount)
 	for row := range matrix {
 		matrix[row] = make([]byte, colCount)
+		copy(matrix[row], data[row*colCount:(row+1)*colCount])
 	}
 
-	// Populate the matrix using range.
-	for rowIndex := range matrix {
-		for colIndex := range matrix[rowIndex] {
-			matrix[rowIndex][colIndex] = data[rowIndex*colCount+colIndex]
-		}
-	}
 	return matrix
 }
 
-func FindKey(keysize int, data []byte) []byte {
+func FindKey(keySize int, data []byte) []byte {
 
-	matrix := FillMatrixFromList(data, keysize)
+	matrix := FillMatrixFromList(data, keySize)
 	matrixTransposed := Transpose(matrix)
 
 	// Process each transposed row and find the most promising key.
-	var outputList [][]byte
-	for _, row := range matrixTransposed {
+	key := make([]byte, keySize)
+
+	for i, row := range matrixTransposed {
 		_, keyByte, _ := CrackSingleByteXor(row)
-		//fmt.Println(string(secret))
-		outputList = append(outputList, []byte{keyByte})
+		key[i] = keyByte
 	}
 
-	// Return most promising key of keySize size.
-	return bytes.Join(outputList, nil)
+	return key
 
 }
 
@@ -217,11 +211,6 @@ func createByteFrequencyMap(data []byte) map[byte]float32 {
 	totalBtyes := len(data)
 	singleByteContribution := 1 / float32(totalBtyes)
 	frequencyMap := make(map[byte]float32, 256)
-
-	// Set initial frequency of 0 for each byte (0 to 255)
-	for i := range frequencyMap {
-		frequencyMap[i] = 0
-	}
 
 	// Count normalised contribution of each Ascii byte instance.
 	for _, value := range data {

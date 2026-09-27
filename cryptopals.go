@@ -18,9 +18,10 @@ func main() {
 	c5()
 	c6()
 	c7()
+	c8()
 }
 
-func c1() {
+func c1() string {
 	fmt.Println("\n-- Challenge 1 - Convert hex to base 64 --")
 
 	plaintextHex := "49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d"
@@ -31,6 +32,8 @@ func c1() {
 	fmt.Println("Hex Plaintext     :", plaintextHex)
 	fmt.Println("Bytes Plaintext   :", string(plaintextBytes))
 	fmt.Println("Base 64 plaintext :", plaintextB64)
+
+	return plaintextB64
 }
 
 func c2() {
@@ -143,32 +146,32 @@ func c6() {
 	likelyKeySizes := utils.FindBestKeySizes(ciphertext, 40, 10)[0:3]
 
 	// Define a struct to hold the key, score, and secret.
-	type Record struct {
-		Key, Secret []byte
-		Score       float32
+	type record struct {
+		key, secret []byte
+		score       float32
 	}
 
-	table := []Record{}
+	table := make([]record, 0, len(likelyKeySizes))
 
 	// Find the record with the lowest Score for top 3 keysizes.
-	for _, entry := range likelyKeySizes[:3] { // Iterate over the first 3 elements.
-		Keylength := entry.IntValue
+	for _, entry := range likelyKeySizes { // Iterate over the first 3 elements.
+		Keylength := entry.KeySize
 		key := utils.FindKey(Keylength, ciphertext)
 		secret := utils.RepeatingKeyXor(key, ciphertext)
 		score := utils.EnglishTextScorer(secret)
-		table = append(table, Record{Key: key, Score: score, Secret: secret})
+		table = append(table, record{key: key, score: score, secret: secret})
 	}
 
 	// Find lowest score.
 	sort.Slice(table, func(i, j int) bool {
-		return table[i].Score < table[j].Score
+		return table[i].score < table[j].score
 	})
 	lowest := table[0]
 
 	fmt.Println("Most likely key sizes and scores :", likelyKeySizes)
-	fmt.Println("Lowest score         : ", lowest.Score)
-	fmt.Println("Corresponding Key    : ", string(lowest.Key))
-	fmt.Println("Secret               : \n", string(lowest.Secret))
+	fmt.Println("Lowest score         : ", lowest.score)
+	fmt.Println("Corresponding Key    : ", string(lowest.key))
+	fmt.Println("Secret               : \n", string(lowest.secret))
 }
 
 func c7() {
@@ -181,6 +184,10 @@ func c7() {
 
 	fmt.Println("Key       : ", string(key))
 	fmt.Println("Plaintext : \n", string(plaintext))
+}
+
+func c8() {
+	fmt.Println("\n-- Challenge 8 - Detect AES in ECB mode --")
 }
 
 func handleError(err error) {
