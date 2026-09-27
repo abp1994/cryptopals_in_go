@@ -193,41 +193,62 @@ func FindKey(keySize int, data []byte) []byte {
 }
 
 var nonAlphabeticCharPattern = regexp.MustCompile(`[^a-zA-Z]+`)
-var desirableTextCharPattern = regexp.MustCompile(`[\w\s,.'!-"\(\)\&%@#~-]`)
+var undesirableTextCharPattern = regexp.MustCompile(`[^\w\s,.'!-"\(\)\&%@#~-]`)
+
+const rejectionValue = float32(math.MaxFloat32)
 
 // Normalised ascii character frequencies.
-var englishCharFreq = map[byte]float32{
-	'A': 0.08167, 'B': 0.01492, 'C': 0.02782, 'D': 0.04253, 'E': 0.12702,
-	'F': 0.02228, 'G': 0.02015, 'H': 0.06094, 'I': 0.06966, 'J': 0.00153,
-	'K': 0.00772, 'L': 0.04025, 'M': 0.02406, 'N': 0.06749, 'O': 0.07507,
-	'P': 0.01929, 'Q': 0.00095, 'R': 0.05987, 'S': 0.06327, 'T': 0.09056,
-	'U': 0.02758, 'V': 0.00978, 'W': 0.02360, 'X': 0.00150, 'Y': 0.01974,
-	'Z': 0.00074,
+var englishCharFreq = [26]float32{
+	0.08167, // A
+	0.01492, // B
+	0.02782, // C
+	0.04253, // D
+	0.12702, // E
+	0.02228, // F
+	0.02015, // G
+	0.06094, // H
+	0.06966, // I
+	0.00153, // J
+	0.00772, // K
+	0.04025, // L
+	0.02406, // M
+	0.06749, // N
+	0.07507, // O
+	0.01929, // P
+	0.00095, // Q
+	0.05987, // R
+	0.06327, // S
+	0.09056, // T
+	0.02758, // U
+	0.00978, // V
+	0.02360, // W
+	0.00150, // X
+	0.01974, // Y
+	0.00074, // Z
 }
 
 // Returns normalised frequencies.
-func createByteFrequencyMap(data []byte) map[byte]float32 {
+func createLetterFrequency(data []byte) [26]float32 {
 
-	totalBtyes := len(data)
-	singleByteContribution := 1 / float32(totalBtyes)
-	frequencyMap := make(map[byte]float32, 256)
+	totalBytes := len(data)
+	singleByteContribution := 1 / float32(totalBytes)
+
+	var frequency [26]float32
 
 	// Count normalised contribution of each Ascii byte instance.
 	for _, value := range data {
-		frequencyMap[value] += singleByteContribution
+		frequency[value-'A'] += singleByteContribution
 	}
 
-	return frequencyMap
+	return frequency
 }
 
 func EnglishTextScorer(text []byte) float32 {
 	textLength := float32(len(text))
-	rejectionValue := float32(math.MaxFloat32)
 
 	// Prescreen
 	// Reject texts containing undesirable characters.
-	undesirableCharOnlyText := desirableTextCharPattern.ReplaceAll(text, []byte(""))
-	if 0 < len(undesirableCharOnlyText) {
+	if undesirableTextCharPattern.Match(text) {
 		return rejectionValue
 	}
 
@@ -239,18 +260,18 @@ func EnglishTextScorer(text []byte) float32 {
 	}
 
 	// Score alphabet only text using chi-squared frequency analysis.
-	alphaTextCharFreq := createByteFrequencyMap(bytes.ToUpper(alphaOnlyText))
+	alphaTextCharFreq := createLetterFrequency(bytes.ToUpper(alphaOnlyText))
 	score := calculateChiSquared(alphaTextCharFreq, englishCharFreq)
 	return score
 }
 
 // Compares two maps using chi-squared analysis and returns a float32 score.
 // A lower score indicates a better fit.
-func calculateChiSquared(observedFreq, expectedFreq map[byte]float32) float32 {
+func calculateChiSquared(observedFreq, expectedFreq [26]float32) float32 {
 	var score float32
-	for key := range observedFreq {
-		observed := observedFreq[key]
-		expected := expectedFreq[key]
+
+	for i, observed := range observedFreq {
+		expected := expectedFreq[i]
 		// Chi-squared formula: sum((observed - expected)^2 / expected)
 		score += (observed - expected) * (observed - expected) / expected
 	}
