@@ -6,11 +6,13 @@ import (
 	"fmt"
 	"math"
 	"sort"
+	"time"
 
 	"github.com/abp1994/cryptopals_in_go/pkg/utils"
 )
 
 func main() {
+	start := time.Now()
 	c1()
 	c2()
 	c3()
@@ -19,6 +21,8 @@ func main() {
 	c6()
 	c7()
 	c8()
+
+	fmt.Println("\nTotal runtime:", time.Since(start))
 }
 
 func c1() string {
